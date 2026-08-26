@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PhishGuard AI — Advanced Phishing Detection & Threat Intelligence</title>
+
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg-dark: #080c14;
+      --bg-card: rgba(16, 24, 40, 0.75);
+      --bg-card-solid: #2a4c8c;
+      --bg-input: #151f32;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-focus: #3b82f6;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --primary-glow: rgba(59, 130, 246, 0.35);
+      --accent-cyan: #06b6d4;
+      --text-main: #f3f4f6;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      
+      --safe-green: #10b981;
+      --safe-glow: rgba(16, 185, 129, 0.25);
+      --safe-bg: rgba(16, 185, 129, 0.1);
+      --safe-border: rgba(16, 185, 129, 0.3);
+
+      --phish-red: #ef4444;
+      --phish-glow: rgba(239, 68, 68, 0.25);
+      --phish-bg: rgba(239, 68, 68, 0.1);
+      --phish-border: rgba(239, 68, 68, 0.3);
+
+      --warning-amber: #f59e0b;
+      --warning-bg: rgba(245, 158, 11, 0.1);
+      --warning-border: rgba(245, 158, 11, 0.3);
+
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-full: 9999px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.5;
+      background-image: 
+        radial-gradient(circle at 50% -20%, rgba(59, 130, 246, 0.18), transparent 50%),
+        radial-gradient(circle at 100% 40%, rgba(6, 182, 212, 0.08), transparent 40%),
+        radial-gradient(circle at 0% 70%, rgba(99, 102, 241, 0.08), transparent 40%);
+      background-attachment: fixed;
+    }
+
+    /* Ambient background grid */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      background-size: 40px 40px;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 24px 20px 60px;
+    }
+
+    /* NAVBAR */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      background: rgba(16, 24, 40, 0.6);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      margin-bottom: 40px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .brand-icon {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, #2563eb, #06b6d4);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
+    }
+
+    .brand-title {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #ffffff 40%, #93c5fd);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-subtitle {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--accent-cyan);
+      font-weight: 700;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      font-size: 13px;
+      font-weight: 500;
+      color: #34d399;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--safe-green);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--safe-green);
+      animation: pulse 2s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    /* HERO SECTION */
+    .hero {
+      text-align: center;
+      margin-bottom: 40px;
+      padding: 0 12px;
+    }
+
+    .hero-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.25);
+      border-radius: var(--radius-full);
+      color: #93c5fd;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      box-shadow: 0 0 16px rgba(59, 130, 246, 0.15);
+    }
+
+    .hero h1 {
+      font-size: clamp(32px, 5vw, 48px);
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      line-height: 1.15;
+      margin-bottom: 16px;
+      background: linear-gradient(180deg, #ffffff 20%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      font-size: clamp(15px, 2vw, 18px);
+      color: var(--text-muted);
+      max-width: 680px;
+      margin: 0 auto;
+      font-weight: 400;
+    }
+
+    /* MAIN CARD & SCANNER */
+    .scanner-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+      margin-bottom: 32px;
+      transition: border-color 0.3s;
+    }
+
+    .scanner-card:hover {
+      border-color: rgba(255, 255, 255, 0.14);
+    }
+
+    .input-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #e2e8f0;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 18px;
+      color: var(--text-dim);
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      transition: color 0.2s;
+    }
+
+    .url-input {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius-md);
+      padding: 16px 20px 16px 52px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 15px;
+      color: #ffffff;
+      outline: none;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .url-input::placeholder {
+      color: var(--text-dim);
+      font-family: 'Inter', sans-serif;
+    }
+
+    .url-input:focus {
+      border-color: var(--border-focus);
+      background: #182338;
+      box-shadow: 0 0 0 4px var(--primary-glow), inset 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .url-input:focus + .input-icon {
+      color: var(--primary);
+    }
+
+    /* MODEL SELECTOR & CONTROLS */
+    .controls-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 640px) {
+      .controls-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .model-selector-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .model-selector-group label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .model-pills {
+      display: inline-flex;
+      background: #0f172a;
+      border: 1px solid var(--border-color);
+      padding: 4px;
+      border-radius: var(--radius-sm);
+      gap: 4px;
+    }
+
+    .model-radio {
+      display: none;
+    }
+
+    .model-label {
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .model-radio:checked + .model-label {
+      background: #2563eb;
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+    }
+
+    .btn-submit {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 14px 28px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 16px rgba(37, 99, 235, 0.35);
+      height: 48px;
+    }
+
+    .btn-submit:hover {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
+    }
+
+    .btn-submit:active {
+      transform: translateY(0);
+    }
+
+    /* QUICK SAMPLES */
+    .quick-samples {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .samples-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .sample-pill {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .sample-pill:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px);
+    }
+
+    .sample-pill.safe-pill:hover {
+      border-color: var(--safe-border);
+      color: #6ee7b7;
+    }
+
+    .sample-pill.danger-pill:hover {
+      border-color: var(--phish-border);
+      color: #fca5a5;
+    }
+
+    /* RESULTS CARD */
+    .result-container {
+      margin-top: 32px;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .verdict-banner {
+      border-radius: var(--radius-lg);
+      padding: 28px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 24px;
+      border: 1px solid transparent;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .verdict-banner.safe {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(6, 78, 59, 0.4) 100%);
+      border-color: var(--safe-border);
+      box-shadow: 0 10px 30px var(--safe-glow);
+    }
+
+    .verdict-banner.phish {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(127, 29, 29, 0.4) 100%);
+      border-color: var(--phish-border);
+      box-shadow: 0 10px 30px var(--phish-glow);
+    }
+
+    .verdict-banner.warning {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(120, 53, 15, 0.4) 100%);
+      border-color: var(--warning-border);
+    }
+
+    .verdict-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .verdict-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .verdict-banner.safe .verdict-icon {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+
+    .verdict-banner.phish .verdict-icon {
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+    }
+
+    .verdict-banner.warning .verdict-icon {
+      background: rgba(245, 158, 11, 0.2);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+    }
+
+    .verdict-title {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 4px;
+    }
+
+    .verdict-banner.safe .verdict-title { color: #6ee7b7; }
+    .verdict-banner.phish .verdict-title { color: #fca5a5; }
+    .verdict-banner.warning .verdict-title { color: #fde68a; }
+
+    .verdict-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .verdict-tag {
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      padding: 8px 18px;
+      border-radius: var(--radius-full);
+      text-transform: uppercase;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .verdict-banner.safe .verdict-tag {
+      background: var(--safe-green);
+      color: #064e3b;
+    }
+
+    .verdict-banner.phish .verdict-tag {
+      background: var(--phish-red);
+      color: #ffffff;
+    }
+
+    /* METRICS GRID */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .metric-card {
+      background: rgba(16, 24, 40, 0.5);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 20px;
+    }
+
+    .metric-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .metric-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      word-break: break-all;
+    }
+
+    .metric-value.mono {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      color: #93c5fd;
+    }
+
+    /* RISK BAR */
+    .risk-meter-card {
+      background: rgba(16, 24, 40, 0.5);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .risk-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .risk-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #e2e8f0;
+    }
+
+    .risk-percentage {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .risk-percentage.safe { color: var(--safe-green); }
+    .risk-percentage.phish { color: var(--phish-red); }
+
+    .progress-bar-bg {
+      width: 100%;
+      height: 12px;
+      background: #0f172a;
+      border-radius: var(--radius-full);
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+      position: relative;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: var(--radius-full);
+      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .progress-bar-fill.safe {
+      background: linear-gradient(90deg, #059669, #10b981);
+      box-shadow: 0 0 12px var(--safe-green);
+    }
+
+    .progress-bar-fill.phish {
+      background: linear-gradient(90deg, #dc2626, #ef4444);
+      box-shadow: 0 0 12px var(--phish-red);
+    }
+
+    /* SECURITY ADVISORY */
+    .advisory-box {
+      background: rgba(15, 23, 42, 0.6);
+      border-left: 4px solid var(--primary);
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      padding: 16px 20px;
+      font-size: 14px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .advisory-box.safe { border-left-color: var(--safe-green); }
+    .advisory-box.phish { border-left-color: var(--phish-red); }
+
+    /* FEATURES / CAPABILITIES SECTION */
+    .features-section {
+      margin-top: 60px;
+    }
+
+    .section-title {
+      text-align: center;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+    }
+
+    .section-subtitle {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-bottom: 32px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      transition: all 0.3s;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(255, 255, 255, 0.16);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .feature-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: rgba(59, 130, 246, 0.1);
+      color: var(--accent-cyan);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+
+    .feature-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 8px;
+    }
+
+    .feature-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* FOOTER */
+    .footer {
+      margin-top: 80px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      color: var(--text-dim);
+      font-size: 13px;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 20px;
+    }
+
+    .footer-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-link:hover {
+      color: #ffffff;
+    }
+
+    /* SPINNER FOR FORM */
+    .spinner {
+      display: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #ffffff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .btn-submit.loading .spinner {
+      display: inline-block;
+    }
+
+    .btn-submit.loading .btn-text {
+      opacity: 0.8;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg-grid"></div>
+
+  <div class="container">
+    <!-- NAVBAR -->
+    <nav class="navbar">
+      <a href="/" class="brand">
+        <div class="brand-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="m9 12 2 2 4-4"/>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title">PhishGuard AI</div>
+          <div class="brand-subtitle">Cyber Threat Intelligence</div>
+        </div>
+      </a>
+
+      <div class="status-badge">
+        <div class="status-dot"></div>
+        <span>ML Engine Online</span>
+      </div>
+    </nav>
+
+    <!-- HERO -->
+    <header class="hero">
+      <div class="hero-pill">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+        <span>Zero-Trust Real-Time URL Heuristics</span>
+      </div>
+      <h1>Intelligent Phishing & Fraud Detection</h1>
+      <p>Analyze suspicious URLs and domain vectors in real time with our dual XGBoost and Artificial Neural Network classification models.</p>
+    </header>
+
+    <!-- SCANNER CARD -->
+    <main class="scanner-card">
+      <form method="post" action="/predict" id="scanForm" onsubmit="handleFormSubmit()">
+        <div class="input-label">
+          <span>Target Website URL</span>
+          <span style="color: var(--text-dim); font-size: 12px;">Supports HTTP & HTTPS</span>
+        </div>
+
+        <div class="input-wrapper">
+          <div class="input-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="2" y1="12" x2="22" y2="12"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
+          </div>
+          <input
+            type="text"
+            id="urlInput"
+            name="url"
+            class="url-input"
+            placeholder="https://secure-login.example.com/auth"
+            value="{{ url or '' }}"
+            required
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </div>
+
+        <div class="controls-row">
+          <!-- MODEL SELECTOR -->
+          <div class="model-selector-group">
+            <label>Inference Engine</label>
+            <div class="model-pills">
+              <input type="radio" id="model_xgb" name="model_type" value="xgboost" class="model-radio" checked />
+              <label for="model_xgb" class="model-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 20V10"/>
+                  <path d="M12 20V4"/>
+                  <path d="M6 20v-6"/>
+                </svg>
+                XGBoost (Fast ML)
+              </label>
+
+              <input type="radio" id="model_ann" name="model_type" value="ann" class="model-radio" />
+              <label for="model_ann" class="model-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+                  <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+                  <line x1="6" y1="6" x2="6.01" y2="6"/>
+                  <line x1="6" y1="18" x2="6.01" y2="18"/>
+                </svg>
+                ANN (Deep MLP)
+              </label>
+
+              <input type="radio" id="model_gemini" name="model_type" value="gemini" class="model-radio" />
+              <label for="model_gemini" class="model-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+                Gemini GenAI (Deep Reasoning)
+              </label>
+
+              <input type="radio" id="model_ensemble" name="model_type" value="ensemble" class="model-radio" />
+              <label for="model_ensemble" class="model-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  <path d="m9 12 2 2 4-4"/>
+                </svg>
+                Tri-Engine Ensemble (ML + GenAI)
+              </label>
+            </div>
+          </div>
+
+          <!-- SUBMIT BUTTON -->
+          <button type="submit" id="submitBtn" class="btn-submit">
+            <div class="spinner" id="btnSpinner"></div>
+            <span class="btn-text" id="btnText">Analyze Target</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"/>
+              <polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- QUICK TEST SAMPLES -->
+        <div class="quick-samples">
+          <span class="samples-label">Quick Test URLs:</span>
+          <button type="button" class="sample-pill safe-pill" onclick="setSampleUrl('https://github.com')">
+            ✔ GitHub (Legit)
+          </button>
+          <button type="button" class="sample-pill safe-pill" onclick="setSampleUrl('https://en.wikipedia.org')">
+            ✔ Wikipedia (Legit)
+          </button>
+          <button type="button" class="sample-pill danger-pill" onclick="setSampleUrl('http://paypal-verification-account-security.tk/login.php')">
+            ⚠ Fake PayPal (Phish)
+          </button>
+          <button type="button" class="sample-pill danger-pill" onclick="setSampleUrl('http://192.168.1.1/secure-bank-update@account-alert.net')">
+            ⚠ IP & @ Vector (Phish)
+          </button>
+        </div>
+      </form>
+
+      <!-- RESULTS SECTION -->
+      {% if result %}
+      <div class="result-container" id="resultsSection">
+        
+        <!-- VERDICT BANNER -->
+        {% if "Error" in result["result_text"] %}
+          <div class="verdict-banner warning">
+            <div class="verdict-left">
+              <div class="verdict-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+              </div>
+              <div>
+                <div class="verdict-title">Scan Error</div>
+                <div class="verdict-subtitle">{{ result["result_text"] }}</div>
+              </div>
+            </div>
+            <div class="verdict-tag" style="background: var(--warning-amber); color: #78350f;">ERROR</div>
+          </div>
+        {% elif result["prediction"] == 1 %}
+          <div class="verdict-banner safe">
+            <div class="verdict-left">
+              <div class="verdict-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  <polyline points="9 12 11 14 15 10"/>
+                </svg>
+              </div>
+              <div>
+                <div class="verdict-title">Legitimate Website</div>
+                <div class="verdict-subtitle">No significant malicious indicators or phishing patterns detected.</div>
+              </div>
+            </div>
+            <div class="verdict-tag">SAFE</div>
+          </div>
+        {% else %}
+          <div class="verdict-banner phish">
+            <div class="verdict-left">
+              <div class="verdict-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  <line x1="12" y1="8" x2="12" y2="12"/>
+                  <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+              </div>
+              <div>
+                <div class="verdict-title">High Risk Phishing Detected</div>
+                <div class="verdict-subtitle">This URL exhibits characteristics of deceptive credentials harvesting or domain spoofing.</div>
+              </div>
+            </div>
+            <div class="verdict-tag">PHISHING</div>
+          </div>
+        {% endif %}
+
+        <!-- METRICS OVERVIEW -->
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-label">Analyzed URL</div>
+            <div class="metric-value mono" title="{{ url }}">{{ url }}</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-label">Active ML Model</div>
+            <div class="metric-value">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="4" width="16" height="16" rx="2"/>
+                <rect x="9" y="9" width="6" height="6"/>
+                <line x1="9" y1="1" x2="9" y2="4"/>
+                <line x1="15" y1="1" x2="15" y2="4"/>
+                <line x1="9" y1="20" x2="9" y2="23"/>
+                <line x1="15" y1="20" x2="15" y2="23"/>
+              </svg>
+              {{ result["model"]|upper }}
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-label">Threat Classification</div>
+            <div class="metric-value">
+              {% if result["prediction"] == 1 %}
+                <span style="color: var(--safe-green);">Low / Benign (1)</span>
+              {% else %}
+                <span style="color: var(--phish-red);">Malicious / Suspicious (-1)</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- GENAI INTELLIGENCE REPORT (If available) -->
+        {% if result.get("summary") or result.get("brand_impersonated") or result.get("red_flags") %}
+        <div class="risk-meter-card" style="margin-bottom: 24px; border: 1px solid rgba(59, 130, 246, 0.25); background: rgba(15, 23, 42, 0.75);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="width: 28px; height: 28px; border-radius: 8px; background: rgba(59, 130, 246, 0.2); color: #60a5fa; display: flex; align-items: center; justify-content: center;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+              </div>
+              <span style="font-size: 16px; font-weight: 700; color: #ffffff;">GenAI Threat Reasoning & Explainability</span>
+            </div>
+
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              {% if result.get("brand_impersonated") and result.get("brand_impersonated") != "None" and result.get("brand_impersonated") != "Unknown" %}
+                <span style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); color: #fca5a5; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 9999px;">
+                  ⚠️ Spoofed Brand: {{ result["brand_impersonated"] }}
+                </span>
+              {% endif %}
+              {% if result.get("threat_category") %}
+                <span style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.35); color: #93c5fd; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 9999px;">
+                  {{ result["threat_category"] }}
+                </span>
+              {% endif %}
+            </div>
+          </div>
+
+          {% if result.get("summary") %}
+            <p style="font-size: 14px; color: #e2e8f0; line-height: 1.6; margin-bottom: 16px; background: rgba(0, 0, 0, 0.25); padding: 12px 16px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.05);">
+              <strong>Executive Summary:</strong> {{ result["summary"] }}
+            </p>
+          {% endif %}
+
+          {% if result.get("sub_model_scores") %}
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 16px;">
+              <div style="background: #0f172a; padding: 10px; border-radius: 8px; text-align: center; border: 1px solid var(--border-color);">
+                <div style="font-size: 11px; color: var(--text-dim); text-transform: uppercase;">XGBoost Score</div>
+                <div style="font-size: 15px; font-weight: 700; color: #93c5fd; font-family: 'JetBrains Mono';">{{ "%.1f"|format(result["sub_model_scores"]["xgboost"] * 100) }}%</div>
+              </div>
+              <div style="background: #0f172a; padding: 10px; border-radius: 8px; text-align: center; border: 1px solid var(--border-color);">
+                <div style="font-size: 11px; color: var(--text-dim); text-transform: uppercase;">ANN MLP Score</div>
+                <div style="font-size: 15px; font-weight: 700; color: #93c5fd; font-family: 'JetBrains Mono';">{{ "%.1f"|format(result["sub_model_scores"]["ann"] * 100) }}%</div>
+              </div>
+              <div style="background: #0f172a; padding: 10px; border-radius: 8px; text-align: center; border: 1px solid var(--border-color);">
+                <div style="font-size: 11px; color: var(--text-dim); text-transform: uppercase;">Gemini GenAI Score</div>
+                <div style="font-size: 15px; font-weight: 700; color: #93c5fd; font-family: 'JetBrains Mono';">
+                  {% if result["sub_model_scores"]["gemini"] != "N/A" %}
+                    {{ "%.1f"|format(result["sub_model_scores"]["gemini"] * 100) }}%
+                  {% else %}
+                    N/A
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          {% endif %}
+
+          {% if result.get("red_flags") and result["red_flags"]|length > 0 %}
+            <div style="margin-top: 12px;">
+              <span style="font-size: 13px; font-weight: 700; color: #fca5a5; text-transform: uppercase; letter-spacing: 0.5px;">Detected Key Risk Signals:</span>
+              <ul style="margin-top: 8px; padding-left: 20px; font-size: 13px; color: var(--text-muted); line-height: 1.7;">
+                {% for flag in result["red_flags"] %}
+                  <li>{{ flag }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- RISK PROBABILITY METER (If available) -->
+        {% if result["phishing_probability"] is not none %}
+        <div class="risk-meter-card">
+          <div class="risk-header">
+            <span class="risk-title">Calculated Phishing Risk Score</span>
+            <span class="risk-percentage {% if result['prediction'] == 1 %}safe{% else %}phish{% endif %}">
+              {{ "%.1f"|format(result["phishing_probability"] * 100) }}% Probability
+            </span>
+          </div>
+          <div class="progress-bar-bg">
+            <div
+              class="progress-bar-fill {% if result['prediction'] == 1 %}safe{% else %}phish{% endif %}"
+              style="width: {{ (result['phishing_probability'] * 100)|round }}%;"
+            ></div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- ADVISORY NOTICE -->
+        <div class="advisory-box {% if result['prediction'] == 1 %}safe{% else %}phish{% endif %}">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px;">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="16" x2="12" y2="12"/>
+            <line x1="12" y1="8" x2="12.01" y2="8"/>
+          </svg>
+          <div>
+            {% if result["prediction"] == 1 %}
+              <strong>Security Recommendation:</strong> The structure, SSL certificate properties, and lexical tokens of this URL align with legitimate domains. Always exercise standard caution when submitting credentials.
+            {% else %}
+              <strong>Security Recommendation:</strong> <u>Do NOT input passwords, 2FA tokens, or financial information</u> on this page. The domain demonstrates patterns consistent with phishing or spoofing campaigns.
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
+      {% endif %}
+    </main>
+
+    <!-- CAPABILITIES SECTION -->
+    <section class="features-section">
+      <h2 class="section-title">Engineered For Zero-Day Threat Mitigation</h2>
+      <p class="section-subtitle">Multi-layered security heuristics combined with supervised gradient boosting</p>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+            </svg>
+          </div>
+          <h3 class="feature-title">Lexical & URL Heuristics</h3>
+          <p class="feature-desc">Analyzes URL length, IP address obfuscation, @ symbol redirects, and sub-domain stacking tactics.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </div>
+          <h3 class="feature-title">SSL & Trust Validation</h3>
+          <p class="feature-desc">Validates certificate authority authenticity, HTTPS tokens, DNS registration age, and domain reputation.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+          </div>
+          <h3 class="feature-title">Real-Time ML Scoring</h3>
+          <p class="feature-desc">Evaluates 30+ dimensional feature vectors through tuned XGBoost and Multi-Layer Perceptron (ANN) models.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+          </div>
+          <h3 class="feature-title">Zero-Day Protection</h3>
+          <p class="feature-desc">Detects brand-new phishing kits and unindexed lookalike domains before they appear on public blocklists.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      <div>© 2026 PhishGuard AI. All rights reserved. Real-time Threat Intelligence.</div>
+      <div class="footer-links">
+        <a href="/" class="footer-link">New Scan</a>
+        <a href="/docs" class="footer-link">API Docs (Swagger)</a>
+        <a href="/redoc" class="footer-link">ReDoc</a>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    function setSampleUrl(url) {
+      const input = document.getElementById('urlInput');
+      input.value = url;
+      input.focus();
+    }
+
+    function handleFormSubmit() {
+      const btn = document.getElementById('submitBtn');
+      const btnText = document.getElementById('btnText');
+      btn.classList.add('loading');
+      btnText.textContent = 'Analyzing Target...';
+    }
+
+    // Scroll to results if present
+    document.addEventListener('DOMContentLoaded', () => {
+      const resultsSection = document.getElementById('resultsSection');
+      if (resultsSection) {
+        resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    });
+  </script>
+</body>
+</html>
