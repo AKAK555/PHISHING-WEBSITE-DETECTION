@@ -1,0 +1,6 @@
+# Treat Jupyter Notebooks as documentation so GitHub Linguist marks repo as Python
+*.ipynb linguist-documentation
+notebook/** linguist-documentation
+
+# Mark template assets
+api/templates/** linguist-detectable=false
