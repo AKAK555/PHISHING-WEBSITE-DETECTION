@@ -1,14 +1,16 @@
-import yaml
+import pandas as pd
+from src.utils import print_header
 
-def load_config(path="config.yaml"):
-    """Load configuration from a YAML file.
+def load_dataset(path: str) -> pd.DataFrame:
+    """Load dataset from a CSV file.
     Args:
-        path (str): Path to the YAML configuration file.
-        """
-    with open(path, "r") as file:
-        config = yaml.safe_load(file)
-    return config
+        path (str): Path to the CSV file.
+    """
+    print_header("LOADING DATASET")
+    df = pd.read_csv(path)
+    print(f"Dataset loaded with shape: {df.shape}")
+    return df
 
-# if __name__ == "__main__":
-#     config = load_config("config.yaml")
-#     print(config)
+if __name__ == "__main__":
+    df = load_dataset("data/phishing.csv")
+    print(df.head())
